@@ -45,7 +45,6 @@ class Flake(models.Model):
     def get_comments(self):
         return self.comments.all()
     
-    @property
     def retweets(self):
         return Retweet.objects.filter(flake=self)
     
