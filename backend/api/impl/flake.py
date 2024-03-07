@@ -54,8 +54,8 @@ def retweet(request):
     flake = service.flake.get(id)
     if flake is None:
         return client_error('INVALID_PARAM', f"No such flake: {id}")
-    new_flake = request.user.post_flake(content=flake.content, retweet_of=flake)
-    return success(new_flake)
+    request.user.retweet(flake)
+    return success(flake)
 
 ## Add the unretweet endpoint
 @require_auth
