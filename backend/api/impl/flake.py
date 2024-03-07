@@ -23,7 +23,7 @@ def get_flake(request):
 def _post(request):
     image = None
     reply_to = None
-    retweet_of = None  # Declare retweet_of variable and initialize it to None
+    # retweet_of = None 
 
     if 'image' in request.payload:
         image = service.file.get_image(request.payload['image'])
