@@ -50,14 +50,33 @@ class User(models.Model):
     def delete_flake(self, flake):
         if flake.author == self:
             flake.delete()
+            
+## Add the retweet to the User model
+    def retweet(self, flake):
+        try:
+            Retweet.objects.get(user=self, flake=flake)
+        except Retweet.DoesNotExist:
+            Retweet.objects.create(
+                user=self,
+                flake=flake
+            )
 
-## Add the list_flakes method to the User model
+## Add the unretweet to the User model
+    def unretweet(self, flake):
+        try:
+            retweet = Retweet.objects.get(user=self, flake=flake)
+            retweet.delete()
+        except Retweet.DoesNotExist:
+            return
+
+## Modify the list_flakes method to include retweets
     def list_flakes(self):
         flakes = Flake.objects.filter(Q(author=self) & Q(reply_to__isnull=True))
         retweets = Retweet.objects.filter(user=self)
         merged = list(flakes) + list(retweets)
         return sorted(merged, key=lambda x: x.creation_date, reverse=True)
-    
+
+## Modify the get_feeds method to include retweets
     def get_feeds(self):
         flakes = Flake.objects.filter((Q(author=self) | Q(author__follower=self)) & Q(reply_to__isnull=True))
         retweets = Retweet.objects.filter(Q(user=self) | Q(user__follower=self))
@@ -94,20 +113,4 @@ class User(models.Model):
     def get_followers(self):
         return self.followers.all()
     
-## Add the retweet to the User model
-    def retweet(self, flake):
-        try:
-            Retweet.objects.get(user=self, flake=flake)
-        except Retweet.DoesNotExist:
-            Retweet.objects.create(
-                user=self,
-                flake=flake
-            )
 
-## Add the unretweet to the User model
-    def unretweet(self, flake):
-        try:
-            retweet = Retweet.objects.get(user=self, flake=flake)
-            retweet.delete()
-        except Retweet.DoesNotExist:
-            return
