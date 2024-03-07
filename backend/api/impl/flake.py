@@ -35,17 +35,39 @@ def _post(request):
         if reply_to is None:
             return client_error('INVALID_PARAM', f"No such flake: {request.payload['reply_to']}")
  
-    if 'retweet_of' in request.payload and request.payload['retweet_of'] is not None:
-        retweet_of = service.flake.get(request.payload['retweet_of'])
-        if retweet_of is None:
-            return client_error('INVALID_PARAM', f"No such flake to retweet: {request.payload['retweet_of']}")
-        new_flake = request.user.post_flake(content=request.payload['content'], retweet_of=retweet_of)
+    # if 'retweet_of' in request.payload and request.payload['retweet_of'] is not None:
+    #     retweet_of = service.flake.get(request.payload['retweet_of'])
+    #     if retweet_of is None:
+    #         return client_error('INVALID_PARAM', f"No such flake to retweet: {request.payload['retweet_of']}")
+    #     new_flake = request.user.post_flake(content=request.payload['content'], retweet_of=retweet_of)
 
     else:
         new_flake = request.user.post_flake(content=request.payload['content'], image=image, reply_to=reply_to)
-
     return success(new_flake)
 
+## Add the retweet endpoint
+@require_auth
+@post("retweet")
+@contract(Schema({'id': int}))
+def retweet(request):
+    id = request.payload['id']
+    flake = service.flake.get(id)
+    if flake is None:
+        return client_error('INVALID_PARAM', f"No such flake: {id}")
+    new_flake = request.user.post_flake(content=flake.content, retweet_of=flake)
+    return success(new_flake)
+
+## Add the unretweet endpoint
+@require_auth
+@post("unretweet")
+@contract(Schema({'id': int}))
+def unretweet(request):
+    id = request.payload['id']
+    flake = service.flake.get(id)
+    if flake is None:
+        return client_error('INVALID_PARAM', f"No such flake: {id}")
+    request.user.unretweet(flake)
+    return success(flake)
 
 @require_auth
 @post("delete")
