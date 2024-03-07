@@ -23,6 +23,8 @@ def get_flake(request):
 def _post(request):
     image = None
     reply_to = None
+    retweet_of = None  # Declare retweet_of variable and initialize it to None
+
     if 'image' in request.payload:
         image = service.file.get_image(request.payload['image'])
         if image is None:
@@ -31,8 +33,17 @@ def _post(request):
         reply_to = service.flake.get(request.payload['reply_to'])
         if reply_to is None:
             return client_error('INVALID_PARAM', f"No such flake: {request.payload['reply_to']}")
-    new_flake = request.user.post_flake(content=request.payload['content'], image=image, reply_to=reply_to) 
+ 
+    if 'retweet_of' in request.payload and request.payload['retweet_of']:
+        retweet_of = service.flake.get(request.payload['retweet_of'])
+        if retweet_of is None:
+            return client_error('INVALID_PARAM', f"No such flake to retweet: {request.payload['retweet_of']}")
+        new_flake = request.user.post_flake(content=request.payload['content'], retweet_of=retweet_of)
+    else:
+        new_flake = request.user.post_flake(content=request.payload['content'], image=image, reply_to=reply_to)
+
     return success(new_flake)
+
 
 @require_auth
 @post("delete")
