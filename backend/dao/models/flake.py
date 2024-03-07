@@ -30,14 +30,14 @@ class Flake(models.Model):
         blank=True,
         null=True
     )
-    retweet_of = models.ForeignKey(
-        'self',
-        related_name="retweets_of",
-        related_query_name="retweet_of",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
+    # retweet_of = models.ForeignKey(
+    #     'self',
+    #     related_name="retweets_of",
+    #     related_query_name="retweet_of",
+    #     on_delete=models.CASCADE,
+    #     blank=True,
+    #     null=True
+    # )
 
     def get_likes(self):
         return self.likes.all()
@@ -45,11 +45,15 @@ class Flake(models.Model):
     def get_comments(self):
         return self.comments.all()
     
-    def retweets(self):
-        return Retweet.objects.filter(flake=self)
+    # def retweets(self):
+    #     return Retweet.objects.filter(flake=self)
     
+    # def get_retweets(self):
+    #     return Flake.objects.filter(retweet_of=self)
+
     def get_retweets(self):
-        return Flake.objects.filter(retweet_of=self)
+        return self.retweets.all()
+
 
 class Like(models.Model):
     id = models.AutoField(primary_key=True)
@@ -68,7 +72,7 @@ class Like(models.Model):
     class Meta:
         constraints = [models.UniqueConstraint("user", "flake", name="unique_like")]
 
-
+## Add the Retweet model
 class Retweet(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
